@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -J stdio_micro
-#SBATCH -p cas_v100_4
+#SBATCH -p cas_v100nv_4
 #SBATCH -N 1
 #SBATCH -n 4
 #SBATCH -o %x.o%j
 #SBATCH -e %x.e%j
-#SBATCH --time 06:00:00
+#SBATCH --time 01:00:00
 #SBATCH --gres=gpu:4
 #SBATCH --comment etc     # See Application SBATCH options name table's
 

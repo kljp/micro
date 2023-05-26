@@ -12,7 +12,7 @@ export USE_WANDB=0
 export WANDB_API_KEY=0 #wandb api key
 export WANDB_ENTITY=0 #wandb entity
 
-world_size=16
+world_size=4
 nwpernode=4
 
 ############### threshold=1/(2*(31832577*density)^(1/2)) ###########
@@ -23,9 +23,15 @@ nwpernode=4
 # python ncf.py --mode train --data=${DATA_DIR} --backend=nccl --shared_path=${SHARED_PATH} --reducer=$reducer --seed=1 --rank=$RANK --world_size=${world_size} --use_wandb=${USE_WANDB} --nwpernode=$nwpernode
 ####################################################################################
 
+########### MiCRO #################################################################
+ reducer='micro'
+ if ((${RANK} == 0)); then rm -f ${DIST_INIT}; else sleep 15; fi
+ python ncf.py --mode train --data=${DATA_DIR} --backend=nccl --shared_path=${SHARED_PATH} --reducer=$reducer --seed=1 --comp_ratio=0.001 --rank=$RANK --world_size=${world_size} --use_wandb=${USE_WANDB} --nwpernode=$nwpernode
+####################################################################################
+
 ########################### DEFT ###################################################
- reducer='deft'
- python ncf.py --mode train --data=${DATA_DIR} --backend=nccl --shared_path=${SHARED_PATH} --reducer=$reducer --seed=1 --comp_ratio=0.1 --rank=$RANK --world_size=${world_size} --use_wandb=${USE_WANDB} --nwpernode=$nwpernode
+# reducer='deft'
+# python ncf.py --mode train --data=${DATA_DIR} --backend=nccl --shared_path=${SHARED_PATH} --reducer=$reducer --seed=1 --comp_ratio=0.1 --rank=$RANK --world_size=${world_size} --use_wandb=${USE_WANDB} --nwpernode=$nwpernode
 #######################################################################################
 
 ########################### Top-k ###################################################

@@ -41,16 +41,16 @@ train.config['average_reset_epoch_interval']= 30
 train.config['distributed_backend']= "nccl"
 train.config['fix_conv_weight_norm']= False
 train.config['log_verbosity']= 2
-train.config['optimizer_batch_size']= 32 #256*8
+train.config['optimizer_batch_size']= 256 #256*8
 train.config['num_epochs'] = 200
-train.config['optimizer_learning_rate']= 0.05
+train.config['optimizer_learning_rate']= 0.1
 train.config['optimizer_conv_learning_rate']= train.config['optimizer_learning_rate']
 train.config['optimizer_decay_at_epochs']= [150, 250]
-train.config['optimizer_decay_with_factor']= 0.1 #10.0
+train.config['optimizer_decay_with_factor']= 10.0
 train.config['optimizer_mom_before_reduce']= False
 train.config['optimizer_momentum_type']= "nesterov"
 train.config['optimizer_momentum']= 0.9
-train.config['optimizer_scale_lr_with_factor']= 1.0#(train.config['optimizer_batch_size']/128)*train.config['n_workers']
+train.config['optimizer_scale_lr_with_factor']= (train.config['optimizer_batch_size']/128)*train.config['n_workers']
 train.config['optimizer_scale_lr_with_warmup_epochs']= 5
 train.config['optimizer_wd_before_reduce']= False
 train.config['optimizer_weight_decay_bn']= 0.0
@@ -100,14 +100,13 @@ elif args.task == 'googlenet_cifar100':
     ################ WikiText2###################
 elif args.task == 'wikitext2':
     train.config['task']= "LanguageModeling"
-    train.config['optimizer_batch_size']= 32
+    train.config['optimizer_batch_size']= 128
     train.config['num_epochs'] = 90
-    train.config['optimizer_learning_rate']= 15.0
+    train.config['optimizer_learning_rate']= 1.25
     train.config['optimizer_conv_learning_rate']= train.config['optimizer_learning_rate']
-    train.config['optimizer_decay_at_epochs']= [45, 80]#[60, 80]
-    train.config['optimizer_decay_with_factor']= 0.1
+    train.config['optimizer_decay_at_epochs']= [60, 80]
     train.config['optimizer_momentum']= 0.0 # Vanilla SGD for Wikitext2
-    train.config['optimizer_scale_lr_with_factor']= 1.0#(train.config['optimizer_batch_size']/64)*train.config['n_workers']
+    train.config['optimizer_scale_lr_with_factor']= (train.config['optimizer_batch_size']/64)*train.config['n_workers']
     train.config['optimizer_weight_decay_conv']= 0.0
     train.config['optimizer_weight_decay_other']= 0.0
     #############################################

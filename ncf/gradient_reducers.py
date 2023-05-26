@@ -94,6 +94,8 @@ class TopKReducer(Reducer):
                 m = mem_list[st_idx:st_idx+numel_m].reshape(m.shape)
                 memory_out[i] = m
                 st_idx += numel_m
+
+        with self.timer("reduce.printinfo", verbosity=2):
             if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", den=" + str(params_transmitted / sz_grad))
@@ -247,6 +249,8 @@ class ThreshReducer(Reducer):
                 m = mem_list[st_idx:st_idx+numel_m].reshape(m.shape)
                 memory_out[i] = m
                 st_idx += numel_m
+
+        with self.timer("reduce.printinfo", verbosity=2):
             if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", den=" + str(params_transmitted / sz_grad))
@@ -368,6 +372,8 @@ class SageReducer(Reducer):
                 m = mem_list[st_idx:st_idx+numel_m].reshape(m.shape)
                 memory_out[i] = m
                 st_idx += numel_m
+
+        with self.timer("reduce.printinfo", verbosity=2):
             if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", den=" + str(params_transmitted / sz_grad))
@@ -551,6 +557,7 @@ class DeftReducer(Reducer):
                 memory_out[i] = m
                 st_idx += numel_m
 
+        with self.timer("reduce.printinfo", verbosity=2):
             if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 merged_k = 0
@@ -569,13 +576,13 @@ class DeftReducer(Reducer):
  
         return bits_communicated, params_transmitted
 
-class SwifterReducer(Reducer):
+class MicroReducer(Reducer):
     def __init__(self, random_seed, device, timer, compression=1 / 244):
         super().__init__(random_seed, device, timer)
         self.compression = compression
         self.iteration = -1
         self.threshold = 1.0
-        self.norm_mem_prev = 1.0
+        self.k_prev = 1
 
     def reduce(self, grad_in, grad_out, memory_out):
         """
@@ -603,12 +610,21 @@ class SwifterReducer(Reducer):
                     self.sz_pos[i] = self.sz_part[i - 1] + self.sz_pos[i - 1]
 
         with self.timer("reduce.estimate", verbosity=2):
+            k = int(self.compression * sz_grad)
             if self.iteration == 0:
-                k = int(self.compression * sz_grad)
-                self.threshold, = torch.kthvalue(flat_grad.abs(), sz_grad + 1 - k)
+                self.threshold, _ = torch.kthvalue(flat_grad.abs(), sz_grad + 1 - k)
             else:
-                norm_mem_curr = torch.norm(flat_grad)
-                self.threshold = self.threshold * (norm_mem_curr / norm_mem_prev)
+                exam = self.k_prev / k
+                if exam > 1.1:
+                    sf = 1.005
+                elif exam > 0.909:
+                    if exam > 0:
+                        sf = 1.00125
+                    else:
+                        sf = 0.9987
+                else:
+                    sf = 0.995
+                self.threshold = self.threshold * sf
 
         with self.timer("reduce.threshold", verbosity=2):
             cycle = self.iteration % self.n_workers
@@ -644,6 +660,7 @@ class SwifterReducer(Reducer):
             else:
                 flat_indexes = indexes
                 values = flat_grad[flat_indexes.long()].contiguous()
+            self.k_prev = params_transmitted
 
         with self.timer("reduce.combine", verbosity=2):
             grad_temp = torch.zeros_like(flat_grad)
@@ -664,9 +681,11 @@ class SwifterReducer(Reducer):
                 m = mem_list[st_idx:st_idx+numel_m].reshape(m.shape)
                 memory_out[i] = m
                 st_idx += numel_m
-            self.norm_mem_prev = torch.norm(mem_list)
-            if self.iteration % 50 == 0:
-                print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(self.norm_mem_prev) + ", den=" + str(params_transmitted / sz_grad))
+
+        with self.timer("reduce.printinfo", verbosity=2):
+            if self.iteration % 1 == 0:
+                norm_mem = torch.norm(mem_list)
+                print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", thre=" + str(self.threshold) + ", den=" + str(params_transmitted / sz_grad))
           
         return bits_communicated, params_transmitted
 
@@ -723,6 +742,8 @@ class CLTKReducer(Reducer):
                 m = mem_list[st_idx:st_idx+numel_m].reshape(m.shape)
                 memory_out[i] = m
                 st_idx += numel_m
+
+        with self.timer("reduce.printinfo", verbosity=2):
             if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", den=" + str(params_transmitted / sz_grad))

@@ -226,6 +226,9 @@ def main():
     elif args.reducer=='deft':
         reducer = getattr(gradient_reducers, "DeftReducer")(1, device, timer, compression=args.comp_ratio)
         run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)
+    elif args.reducer=='micro':
+        reducer = getattr(gradient_reducers, "MicroReducer")(1, device, timer, compression=args.comp_ratio)
+        run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)
     elif args.reducer=='cltk':
         reducer = getattr(gradient_reducers, "CLTKReducer")(1, device, timer, compression=args.comp_ratio)
         run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)

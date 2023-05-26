@@ -472,7 +472,7 @@ def get_learning_rate(epoch, parameter_name):
 
     for decay_epoch in config["optimizer_decay_at_epochs"]:
         if epoch >= decay_epoch:
-            lr *= config["optimizer_decay_with_factor"] #/= config["optimizer_decay_with_factor"]
+            lr /= config["optimizer_decay_with_factor"]
         else:
             return lr
     return lr
