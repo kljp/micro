@@ -175,9 +175,9 @@ class GlobalTopKReducer(Reducer):
 
 class ThreshReducer(Reducer):
      
-    def __init__(self, random_seed, device, timer, thresh=0.5):
+    def __init__(self, random_seed, device, timer, compression=1 / 244):
         super().__init__(random_seed, device, timer)
-        self.threshold = thresh
+        self.compression = compression
         self.iteration = -1
         self.density_actual = 0.0
         self.density_average = 0.0
@@ -200,7 +200,9 @@ class ThreshReducer(Reducer):
             sz_grad = len(flat_grad)
 
         with self.timer("reduce.threshold", verbosity=2):
-            indexes, = torch.where(flat_grad.abs()>=self.threshold)
+            k = int(self.compression * sz_grad)
+            threshold = 1.0 / (2.0 * math.sqrt(k))
+            indexes, = torch.where(flat_grad.abs()>=threshold)
 
         with self.timer("reduce.gather", verbosity=2):
             if self.n_workers > 1:
@@ -259,9 +261,8 @@ class ThreshReducer(Reducer):
 
 class SageReducer(Reducer):
      
-    def __init__(self, random_seed, device, timer, thresh=0.5, compression=0.001):
+    def __init__(self, random_seed, device, timer, compression=1 / 244):
         super().__init__(random_seed, device, timer)
-        self.threshold = thresh
         self.iteration = -1
         self.alpha = 1.0
         self.beta = 1.0
@@ -321,6 +322,9 @@ class SageReducer(Reducer):
                 for i in range(self.samp_sz):
                     samp_acc += abs(flat_grad[random.randrange(sz_grad)])
                 self.savg_curr = samp_acc / self.samp_sz
+                k = int(self.density_ideal * sz_grad)
+                self.threshold = 1.0 / (2.0 * math.sqrt(k))
+
 
         with self.timer("reduce.threshold", verbosity=2):
             indexes, = torch.where(flat_grad.abs()>=self.threshold)
@@ -608,11 +612,16 @@ class MicroReducer(Reducer):
                 self.sz_pos = [0 for i in range(self.n_workers)]
                 for i in range(1, self.n_workers):
                     self.sz_pos[i] = self.sz_part[i - 1] + self.sz_pos[i - 1]
+            cycle = self.iteration % self.n_workers
+            curr_part = (cycle + self.rank) % self.n_workers
+            st_part = self.sz_pos[curr_part]
+            end_part = self.sz_pos[curr_part] + self.sz_part[curr_part]
 
         with self.timer("reduce.estimate", verbosity=2):
             k = int(self.compression * sz_grad)
             if self.iteration == 0:
-                self.threshold, _ = torch.kthvalue(flat_grad.abs(), sz_grad + 1 - k)
+                self.threshold = 1.0 / (2.0 * math.sqrt(k))
+#                self.threshold, _ = torch.kthvalue(flat_grad.abs(), sz_grad + 1 - k)
             else:
                 exam = self.k_prev / k
                 if exam > 1.1:
@@ -627,12 +636,12 @@ class MicroReducer(Reducer):
                 self.threshold = self.threshold * sf
 
         with self.timer("reduce.threshold", verbosity=2):
-            cycle = self.iteration % self.n_workers
-            curr_part = (cycle + self.rank) % self.n_workers
-            st_part = self.sz_pos[curr_part]
-            end_part = self.sz_pos[curr_part] + self.sz_part[curr_part]
             indexes, = torch.where(flat_grad[st_part:end_part].abs()>=self.threshold)
-            indexes += st_part
+            if len(indexes) == 0:
+                indexes = torch.zeros(1, dtype=indexes.dtype, device=indexes.device)
+                indexes = (indexes + self.iteration) % (end_part - st_part) + st_part
+            else:
+                indexes += st_part
 
         with self.timer("reduce.gather", verbosity=2):
             if self.n_workers > 1:
@@ -683,7 +692,7 @@ class MicroReducer(Reducer):
                 st_idx += numel_m
 
         with self.timer("reduce.printinfo", verbosity=2):
-            if self.iteration % 1 == 0:
+            if self.iteration % 50 == 0:
                 norm_mem = torch.norm(mem_list)
                 print("[Iter " + str(self.iteration) + "] [Rank " + str(int(self.rank)) + "] err=" + str(norm_mem) + ", thre=" + str(self.threshold) + ", den=" + str(params_transmitted / sz_grad))
           

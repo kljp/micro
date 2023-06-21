@@ -53,8 +53,8 @@ export USE_WANDB=0 # Whether to use wandb or not
 ########################################################################################
 
 #################################### Reducers ##########################################
-world_size=4
-nwpernode=4
+world_size=16
+nwpernode=8
 #########################
 
 
@@ -109,25 +109,25 @@ nwpernode=4
 ########### Threshold ############ 
 # reducer='thresh'
 # if ((${RANK} == 0)); then rm -f ${DIST_INIT}; fi
-# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --thresh=0.002938 --rank=${RANK} --nwpernode=$nwpernode
+# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.001 --rank=${RANK} --nwpernode=$nwpernode
 ##################################
 
 ########### SAGE ############ 
 # reducer='sage'
 # if ((${RANK} == 0)); then rm -f ${DIST_INIT}; fi
-# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --thresh=0.0002938 --comp_ratio=0.001 --rank=${RANK} --nwpernode=$nwpernode
+# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.001 --rank=${RANK} --nwpernode=$nwpernode
 ##################################
 
 ########### Top-k ############
 # reducer='topk'
 # if ((${RANK} == 0)); then rm -f ${DIST_INIT}; else sleep 15; fi
-# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.01 --rank=${RANK} --nwpernode=$nwpernode
+# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.001 --rank=${RANK} --nwpernode=$nwpernode
 ###############################
 
 ########### CLT-k ############
 # reducer='cltk'
 # if ((${RANK} == 0)); then rm -f ${DIST_INIT}; else sleep 15; fi
-# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.01 --rank=${RANK} --nwpernode=$nwpernode
+# python run.py --world_size=$world_size --task=$task --seed=1 --reducer=$reducer --comp_ratio=0.001 --rank=${RANK} --nwpernode=$nwpernode
 ###############################
 
 ### Entire model Top-k ########

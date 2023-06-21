@@ -218,11 +218,11 @@ def main():
         reducer = getattr(gradient_reducers, "ExactReducer")(1, device, timer)
         run_name = args.reducer+'_'+str(args.seed)
     elif args.reducer=='thresh':
-        reducer = getattr(gradient_reducers, "ThreshReducer")(1, device, timer, thresh=args.thresh)
-        run_name = args.reducer+'_'+str(args.thresh)+'_'+str(args.seed)
+        reducer = getattr(gradient_reducers, "ThreshReducer")(1, device, timer, compression=args.comp_ratio)
+        run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)
     elif args.reducer=='sage':
-        reducer = getattr(gradient_reducers, "SageReducer")(1, device, timer, thresh=args.thresh, compression=args.comp_ratio)
-        run_name = args.reducer+'_'+str(args.thresh)+'_'+str(args.comp_ratio)+'_'+str(args.seed)
+        reducer = getattr(gradient_reducers, "SageReducer")(1, device, timer, compression=args.comp_ratio)
+        run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)
     elif args.reducer=='deft':
         reducer = getattr(gradient_reducers, "DeftReducer")(1, device, timer, compression=args.comp_ratio)
         run_name = args.reducer+'_'+str(args.comp_ratio)+'_'+str(args.seed)

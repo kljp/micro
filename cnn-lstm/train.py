@@ -516,27 +516,14 @@ def get_reducer(device, timer):
         or config["optimizer_reducer"] == "CLTKReducer"
         or config["optimizer_reducer"] == "DeftReducer"
         or config["optimizer_reducer"] == "MicroReducer"
+        or config["optimizer_reducer"] == "SageReducer"
+        or config["optimizer_reducer"] == "ThreshReducer"
     ):
         return getattr(gradient_reducers, config["optimizer_reducer"])(
             random_seed=config["seed"],
             device=device,
             timer=timer,
             compression=config["optimizer_reducer_compression"],
-        )
-    elif config["optimizer_reducer"] == "SageReducer":
-        return getattr(gradient_reducers, config["optimizer_reducer"])(
-            random_seed=config["seed"],
-            device=device,
-            timer=timer,
-            thresh=config["optimizer_reducer_thresh"],
-            compression=config["optimizer_reducer_compression"]
-        )
-    elif config["optimizer_reducer"] == "ThreshReducer":
-        return getattr(gradient_reducers, config["optimizer_reducer"])(
-            random_seed=config["seed"],
-            device=device,
-            timer=timer,
-            thresh=config["optimizer_reducer_thresh"]
         )
     elif config["optimizer_reducer"] == "AccordionTopKReducer":
         return getattr(gradient_reducers, config["optimizer_reducer"])(

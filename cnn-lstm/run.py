@@ -41,7 +41,7 @@ train.config['average_reset_epoch_interval']= 30
 train.config['distributed_backend']= "nccl"
 train.config['fix_conv_weight_norm']= False
 train.config['log_verbosity']= 2
-train.config['optimizer_batch_size']= 256 #256*8
+train.config['optimizer_batch_size']= 32 #256*8
 train.config['num_epochs'] = 200
 train.config['optimizer_learning_rate']= 0.1
 train.config['optimizer_conv_learning_rate']= train.config['optimizer_learning_rate']
@@ -81,7 +81,7 @@ elif args.task == 'senet':
     train.config['task']= "Cifar"
     train.config['task_architecture']= "SENet18"
     #############################################
-    ############## SENet-CIFAR10 ##########
+    ############## SENet-CIFAR100 ##########
 elif args.task == 'senet_cifar100':
     train.config['task']= "Cifar100"
     train.config['task_architecture']= "seresnet18"
@@ -91,7 +91,7 @@ elif args.task == 'googlenet':
     train.config['task']= "Cifar"
     train.config['task_architecture']= "Googlenet"
     #############################################
-    ############## GoogleNet-CIFAR10 ##########
+    ############## GoogleNet-CIFAR100 ##########
 elif args.task == 'googlenet_cifar100':
     train.config['task']= "Cifar100"
     train.config['task_architecture']= "googlenet"
@@ -100,9 +100,9 @@ elif args.task == 'googlenet_cifar100':
     ################ WikiText2###################
 elif args.task == 'wikitext2':
     train.config['task']= "LanguageModeling"
-    train.config['optimizer_batch_size']= 128
+    train.config['optimizer_batch_size']= 32
     train.config['num_epochs'] = 90
-    train.config['optimizer_learning_rate']= 1.25
+    train.config['optimizer_learning_rate']= 2.5
     train.config['optimizer_conv_learning_rate']= train.config['optimizer_learning_rate']
     train.config['optimizer_decay_at_epochs']= [60, 80]
     train.config['optimizer_momentum']= 0.0 # Vanilla SGD for Wikitext2
@@ -136,17 +136,16 @@ elif args.reducer=='deft':
 elif args.reducer=='sage':
     ############ SAGE ############
     train.config['optimizer_reducer'] = "SageReducer"
-    train.config['optimizer_reducer_thresh'] = args.thresh
     train.config['optimizer_reducer_compression'] = args.comp_ratio
     train.config['optimizer_memory'] = not args.no_memory
-    train.config['run_name'] = 'sage' + '_' + str(train.config['optimizer_reducer_thresh']) + '_' + str(train.config['optimizer_reducer_compression']) + '_mem' + str(train.config['optimizer_memory']) +'_' +str(train.config['seed'])
+    train.config['run_name'] = 'sage' + '_' + str(train.config['optimizer_reducer_compression']) + '_mem' + str(train.config['optimizer_memory']) +'_' +str(train.config['seed'])
     ############################
 elif args.reducer=='thresh':
     ############ Threshold ############
     train.config['optimizer_reducer'] = "ThreshReducer"
-    train.config['optimizer_reducer_thresh'] = args.thresh
+    train.config['optimizer_reducer_compression'] = args.comp_ratio
     train.config['optimizer_memory'] = not args.no_memory
-    train.config['run_name'] = 'thr' + '_' + str(train.config['optimizer_reducer_thresh']) + '_mem' + str(train.config['optimizer_memory']) +'_' +str(train.config['seed'])
+    train.config['run_name'] = 'thr' + '_' + str(train.config['optimizer_reducer_compression']) + '_mem' + str(train.config['optimizer_memory']) +'_' +str(train.config['seed'])
     ############################
 elif args.reducer=='cltk':
     ############# CLTk ############
