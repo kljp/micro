@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the below environment variables
-export RANK="$SLURM_PROCID" # enter the rank of the current node
+export RANK=0 #"$SLURM_PROCID" # enter the rank of the current node
 export DATA="" # Path to test and training data files
 export WANDB_ENTITY=0 # enter your wandb entity
 export WANDB_API_KEY=0 # Your wandb key
