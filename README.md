@@ -56,7 +56,17 @@ $ hostip=<ip> port=<port> mpirun -np <world_size> run.sh
 
 ## Publication
 
-Under review.
+If you use this code, please cite the following [**\[Paper\]**](https://arxiv.org/abs/2310.00967):
+- **MiCRO: Near-Zero Cost Gradient Sparsification for Scaling and Accelerating Distributed DNN Training**. Daegun Yoon, Sangyoon Oh. ***HiPC 2023***, Dec. 2023.
+
+```
+@article{yoon2023micro,
+  title={MiCRO: Near-Zero Cost Gradient Sparsification for Scaling and Accelerating Distributed DNN Training},
+  author={Yoon, Daegun and Oh, Sangyoon},
+  journal={arXiv preprint arXiv:2310.00967},
+  year={2023}
+}
+```
 
 ## Contact
 

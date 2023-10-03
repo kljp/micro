@@ -54,7 +54,7 @@ export USE_WANDB=0 # Whether to use wandb or not
 
 #################################### Reducers ##########################################
 world_size=16
-nwpernode=8
+nwpernode=4
 #########################
 
 
